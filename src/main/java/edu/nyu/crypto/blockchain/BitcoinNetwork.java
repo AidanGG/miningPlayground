@@ -59,7 +59,6 @@ public class BitcoinNetwork {
                     .sorted(Comparator.comparing(Entry::getValue))
                     .collect(Collectors.toList());
             Map<BlockMessage, Double> initialMessages = new HashMap<>(miners.size());
-            double currentOrphanProbability = singleOrphanRate;
             for (Entry<Miner, Double> winner : winningMiners) {
                 Miner winningMiner = winner.getKey();
                 Block previousBlock = winningMiner.currentlyMiningAt();
@@ -68,9 +67,7 @@ public class BitcoinNetwork {
                 BlockMessage blockMessage = new BlockMessage(nextBlock, winningMiner);
                 minedRewards.merge(winningMiner,reward,Double::sum);
                 initialMessages.put(blockMessage, 0d);
-                if (miningRNG.nextDouble() < currentOrphanProbability) {
-                    currentOrphanProbability *= singleOrphanRate;
-                } else {
+                if (miningRNG.nextDouble() > singleOrphanRate) {
                     break;
                 }
             }
